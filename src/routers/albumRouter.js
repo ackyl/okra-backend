@@ -11,7 +11,6 @@ const albumArt = require('album-art')
 // __dirname: alamat folder file userRouter.js
 const rootdir = path.join(__dirname,'/../..')
 const photosdir = path.join(rootdir, '/upload/music')
-const testingdir = path.join(rootdir, '/upload/testing')
 
 const folder = multer.diskStorage(
     {
@@ -21,6 +20,7 @@ const folder = multer.diskStorage(
         filename: function (req, file, cb){
             // Waktu upload, nama field, extension file
             cb(null, Date.now() + file.fieldname + path.extname(file.originalname))
+
         }
     }
 )
@@ -96,24 +96,29 @@ router.post('/album/uploads', upstore.array('mu', 20), (req, res) => {
                     album_id = result.insertId
 
                     for(x in req.files){
+
+                        zz = 0
+
                         mumeta.parseFile(`upload/music/${req.files[x].filename}`, {native: true})
                         .then(metadata=>{
                             track_name = util.inspect(metadata.common.title).replace(/'/g,"")
                             track_duration = parseInt(util.inspect(metadata.format.duration))
-                            track_number = util.inspect(metadata.common.track).slice(6,7)
+                            track_number = parseInt(util.inspect(metadata.common.track).slice(6,8))
 
                             trackqry = []
                             trackqry.push(album_id)
                             trackqry.push(track_number)
                             trackqry.push(track_name)
                             trackqry.push(track_duration)
-                            trackqry.push(`upload/music/${req.files[x].filename}`)
+                            trackqry.push(`upload/music/${req.files[zz].filename}`)
 
                             conn.query(qry2, [trackqry], (err, result2) => {
                                 if(err) return res.send(err)
                             })
+
+                            zz +=  1
                         })
-                    }    
+                    }
                 })
             })
         })
@@ -143,12 +148,6 @@ router.post('/album/upload', upstore.single('mu'), (req, res) => {
 //Testing Ground
 mumeta.parseFile(`upload/testing/test.mp3`, {native: true})
     .then(metadata=>{
-        console.log(util.inspect(metadata, { showHidden: false, depth: null }) + '\n\n')
-        console.log(util.inspect(metadata.common.track).slice(6,7))
-        console.log(util.inspect(metadata.common.year))
-        var timestamp = new Date().toISOString().slice(0,19).replace('T', ' ');
-        console.log(timestamp)
-        console.log('2016-01-17 17:26:09')
     })
 
 module.exports = router
