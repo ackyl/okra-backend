@@ -44,8 +44,12 @@ const upstore = multer(
 //Upload Album
 router.post('/album/uploads', upstore.array('mu', 20), (req, res) => {
 
-    const qry1 = `INSERT INTO album (album_name, album_artist, genre, release_year, picture, price, upload_date) VALUES (?)`
+    const qry1 = `INSERT INTO album (album_name, album_artist, release_year, picture, price, stock, upload_date, deleted) VALUES (?)`
     const qry2 = `INSERT INTO track (album_id, track_number, track_name, track_duration, mp3) VALUES (?)`
+    const qry3 = `SELECT genre_id FROM genre WHERE genre = (?)`
+    const qry4 = `INSERT INTO genre (genre) VALUES (?)`
+    const qry5 = `INSERT INTO album_genre (album_id, genre_id) VALUES (?)`
+
     album_id = 0
 
         //NGESAVE ALBUM ID
@@ -59,8 +63,13 @@ router.post('/album/uploads', upstore.array('mu', 20), (req, res) => {
             album_artist = util.inspect(metadata.common.albumartist).replace(/'/g,"")
             genre = util.inspect(metadata.common.genre[0]).replace(/'/g,"")
             release_year = util.inspect(metadata.common.year)
-            timestamp = new Date().toISOString().slice(0,19).replace('T', ' ');
+            timestamp = new Date().toLocaleString("en-US", {timeZone: 'Asia/Bangkok'})
             price = 500000
+            stock = 100
+            deleted = false
+
+            // console.log(timestamp.slice(0,9))
+            // console.log(timestamp.slice(11))
 
             albumArt(album_artist, {album: album_name}, (err, art) => {
                 if(err) console.log(err)
@@ -70,16 +79,45 @@ router.post('/album/uploads', upstore.array('mu', 20), (req, res) => {
                 albumqry = []
                 albumqry.push(album_name)
                 albumqry.push(album_artist)
-                albumqry.push(genre)
                 albumqry.push(release_year)
                 albumqry.push(picture)
                 albumqry.push(price)
+                albumqry.push(stock)
                 albumqry.push(timestamp)
+                albumqry.push(deleted)
 
                 conn.query(qry1, [albumqry], (err, result) => {
                     if(err) return res.send(err)
 
                     album_id = result.insertId
+
+                    //Check if such genre exist
+                    //If there is, genre_id is that
+                    //If not, push then get genre_id
+
+                    conn.query(qry3, genre, (err,result33) => {
+                        
+                        genreqry = []
+
+                        if(result33[0] == undefined){
+                            conn.query(qry4, genre, (err, result44)=> {
+                                if(err) res.send(err)
+
+                                genreqry.push(album_id)
+                                genreqry.push(result44.insertId)
+
+                                conn.query(qry5, [genreqry], (err, result66) => {
+                                    if(err) res.send(err)
+                                })
+                            })
+                        }else{
+                            genreqry.push(album_id)
+                            genreqry.push(result33[0].genre_id)
+                            conn.query(qry5, [genreqry], (err, result55) => {
+                                if(err) res.send(err)
+                            })
+                        }
+                    })
 
                     for(x in req.files){
 
@@ -114,6 +152,11 @@ router.post('/album/uploads', upstore.array('mu', 20), (req, res) => {
 //Testing Ground
 mumeta.parseFile(`upload/testing/test.mp3`, {native: true})
     .then(metadata=>{
+        // timestamp = new Date().toLocaleString("en-US", {timeZone: 'Asia/Bangkok'})
+        // console.log(timestamp.slice(0,9))
+        // console.log(timestamp.slice(11))
+
+        // timestamp = new Date().toISOString().slice(0,19).replace('T', ' ');
     })
 
 /*
