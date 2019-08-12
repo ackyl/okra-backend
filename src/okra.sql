@@ -3,6 +3,20 @@ USE okra;
 
 SELECT * FROM album;
 SELECT * FROM track;
+SELECT * FROM genre;
+SELECT * FROM album_genre;
+
+SELECT * FROM users;
+SELECT * FROM transactions;
+SELECT * FROM users_trans_album;
+
+SELECT t.track_number, a.album_artist, t.track_name, a.picture, t.track_duration, t.mp3  FROM album a JOIN track t ON a.album_id = t.album_id WHERE a.album_id = 1;
+
+SELECT * FROM users WHERE username = 'test' OR email = 'test@gmail.com';
+
+SELECT * FROM track ORDER BY track_duration;
+
+SELECT * FROM album ORDER BY upload_date;
 
 SELECT * FROM album a JOIN track t ON a.album_id = t.album_id;
 
@@ -13,17 +27,27 @@ ORDER BY t.track_number;
 
 DROP TABLE album;
 DROP TABLE track;
+DROP TABLE genre;
+DROP TABLE album_genre;
+DROP TABLE users_trans_album;
+DROP TABLE users;
 
 ALTER TABLE album AUTO_INCREMENT = 1;
 ALTER TABLE track AUTO_INCREMENT = 1;
 
 DELETE FROM album WHERE album_id > 0;
 DELETE FROM track WHERE track_id > 0;
+DELETE FROM genre WHERE genre_id > 0;
+
+INSERT INTO genre (genre) VALUES('Jazz');
+
+SELECT * FROM genre WHERE genre = 'Jazz';
 
 CREATE TABLE album(
 album_id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
 album_name VARCHAR(100) NOT NULL,
 album_artist VARCHAR(100) NOT NULL,
+genre VARCHAR(100) NOT NULL,
 release_year INT NOT NULL,
 picture VARCHAR(100),
 price INT NOT NULL,
@@ -58,6 +82,41 @@ FOREIGN KEY(album_id) REFERENCES album(album_id)
 ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FK_AlbumGenreGenreId
 FOREIGN KEY(genre_id) REFERENCES genre(genre_id)
+ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE users(
+user_id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
+username VARCHAR(100) NOT NULL,
+name VARCHAR(100) NOT NULL,
+email VARCHAR(100) NOT NULL,
+password VARCHAR(100) NOT NULL,
+user_type VARCHAR(100) NOT NULL,
+profile_picture VARCHAR(100)
+);
+
+SELECT * FROM users;
+
+CREATE TABLE transactions(
+transaction_id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
+transaction_type VARCHAR(100) NOT NULL,
+transaction_date VARCHAR(100) NOT NULL,
+picture VARCHAR(100)
+);
+
+CREATE TABLE users_trans_album(
+id INT unsigned AUTO_INCREMENT NOT NULL PRIMARY KEY,
+user_id INT unsigned,
+album_id INT unsigned,
+transaction_id INT unsigned,
+CONSTRAINT FK_UserUTA
+FOREIGN KEY(user_id) REFERENCES users(user_id)
+ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT FK_AlbumUTA
+FOREIGN KEY(album_id) REFERENCES album(album_id)
+ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT FK_TransactionUTA
+FOREIGN KEY(transaction_id) REFERENCES transactions(transaction_id)
 ON DELETE CASCADE ON UPDATE CASCADE
 );
 
