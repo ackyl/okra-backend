@@ -169,10 +169,19 @@ router.get('/album/track/:track', (req, res) => {
 
     const fileName = req.params.track
 
-    res.sendFile(fileName, options, function(err){
-        if(err) return res.send(err)
-        
-    })
+    // fs.createReadStream(`upload/music/${fileName}`).pipe(res)
+
+    res.sendFile(fileName, options, function(err){})
+})
+
+router.get('/asd', (req, res) => {
+    const options = {
+        root: photosdir
+    }
+
+    const fileName = 'logo.jpg'
+
+    res.sendFile(path.join(photosdir,fileName))
 })
 
 //SAFE DELETE ALBUM
@@ -210,17 +219,29 @@ router.get('/album/filter', (req, res) => {
     })
 })
 
+//EDIT ALBUM PRICE AND STOCK
+router.patch('/album/:id', (req, res) => {
+    const sql = `UPDATE album SET ? WHERE album_id = ${req.params.id}`
+    const data = req.body
+
+    conn.query(sql, data, (err, result) => {
+        if(err) return res.send(err)
+
+        res.send(result)
+    })
+})
+
 //VIEW ALL TRACKS ON ALBUM
-router.get('/tracks/:id', (req,res) => {
+router.get('/tracks/:album_id', (req,res) => {
     const sql = `SELECT t.track_number, a.album_artist, t.track_name, a.picture, t.track_duration, t.mp3
-                FROM album a JOIN track t ON a.album_id = t.album_id WHERE ?`
-    const data = req.params.id
+                FROM album a JOIN track t ON a.album_id = t.album_id WHERE a.album_id = ?`
+    const data = req.params.album_id
 
     conn.query(sql, data, (err,result) => {
         if(err) return res.send(err)
 
         for(x in result){
-            result[x].mp3 = `localhost:2019/album/track/${result[x].mp3}`
+            result[x].mp3 = `http://localhost:2019/album/track/${result[x].mp3}`
         }
 
         res.send(result)

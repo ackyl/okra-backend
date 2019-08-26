@@ -3,10 +3,42 @@ const isEmail = require('validator/lib/isEmail')
 const bcrypt = require('bcrypt')
 const router = require('express').Router()
 const path = require('path')
+const fs = require('fs')
+const multer = require('multer')
+
+
 const rootdir = path.join(__dirname,'/../..')
 const photosdir = path.join(rootdir, '/upload/image')
 
+const folder = multer.diskStorage(
+    {
+        destination: function (req, file, cb){
+            cb(null, photosdir)
+        },
+        filename: function (req, file, cb){
+            // Waktu upload, nama field, extension file
+            cb(null, Date.now() + file.fieldname + path.extname(file.originalname))
+        }
+    }
+)
 
+const upstore = multer(
+    {
+        storage: folder,
+        limits: {
+            fileSize: 1000000 // Byte , default 1MB
+        },
+        fileFilter(req, file, cb) {
+            if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){ // will be error if the extension name is not one of these
+                return cb(new Error('Please upload image file (jpg, jpeg, or png)')) 
+            }
+    
+            cb(undefined, true)
+        }
+    }
+)
+
+//Register
 router.post('/users', (req, res) => {
 
     const insertqry = `INSERT INTO users SET ?`
@@ -36,7 +68,7 @@ router.post('/users', (req, res) => {
 
 })
 
-
+//Access Image
 router.get('/users/pp/:image', (req, res) => {
     const options = {
         root: photosdir
@@ -51,12 +83,40 @@ router.get('/users/pp/:image', (req, res) => {
 
 })
 
-
-
+//User Details
 router.get('/users/:username', (req, res) => {
-    const sql = `SELECT username, name, email, profile_picture
-                FROM users WHERE username = ?`
+    const sql = `SELECT * FROM users WHERE username = ?`
     const data = req.params.username
+
+    conn.query(sql, data, (err, result) => {
+        if(err) return res.send(err)
+
+        if(!result[0]) return res.send('User not found')
+
+        result[0].profile_picture = `localhost:2019/users/pp/${result[0].profile_picture}`
+
+        res.send(result[0])
+    })
+})
+
+//Edit Profile
+router.patch('/users/:id', (req, res) => {
+    const sql = `UPDATE users SET ? WHERE user_id = ${req.params.id}`
+    const data = req.body
+
+    conn.query(sql, data, (err, result) => {
+        if(err) return res.send(err)
+
+        res.send(result)
+    })
+})
+
+//Upload Profile Picture
+router.post('/users/pp', upstore.single('pp'), (req, res) => {
+    const sql = `SELECT * FROM users WHERE username = ?`
+    const sql2 = `UPDATE users SET profile_picture = '${req.file.filename}'
+                    WHERE username = '${req.body.username}'`
+    const data = req.body.username
 
     conn.query(sql, data, (err, result) => {
         if(err) return res.send(err)
@@ -65,13 +125,16 @@ router.get('/users/:username', (req, res) => {
 
         if(!user) return res.send('User not found')
 
-        res.send({
-            username: user.username,
-            name : user.name,
-            email: user.email,
-            avatar: `localhost:2019/users/pp/${user.profile_picture}`
+        conn.query(sql2, (err, result2) => {
+            if(err) return res.send(err)
+
+            res.send({
+                message: 'Upload berhasil',
+                filename: req.file.filename
+            })
         })
     })
 })
+
 
 module.exports = router

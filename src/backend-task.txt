@@ -1,10 +1,9 @@
 USER
 1. Create User with Default Profile Picture (~)
 2. View User Detail (~)
-3. Login 
-4. Edit Profile
-5. Upload Profile Picture
-6. Remove Profile Picture (Return Back to Default)
+3. Edit Profile (~)
+4. Upload Profile Picture
+5. Remove Profile Picture (Return Back to Default)
 
 USER CART
 1. Add to Cart

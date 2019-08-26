@@ -6,7 +6,8 @@ const conn = mysql.createConnection(
         password: '12345',
         host: 'localhost',
         database: 'okra',
-        port : 3306
+        port : 3306,
+        insecureAuth: true
     }
 )
 
