@@ -174,16 +174,6 @@ router.get('/album/track/:track', (req, res) => {
     res.sendFile(fileName, options, function(err){})
 })
 
-router.get('/asd', (req, res) => {
-    const options = {
-        root: photosdir
-    }
-
-    const fileName = 'logo.jpg'
-
-    res.sendFile(path.join(photosdir,fileName))
-})
-
 //SAFE DELETE ALBUM
 router.delete('/album/:id', (req, res) => {
     const sql = `UPDATE album SET deleted = 1 WHERE album_id = ?`
@@ -234,7 +224,7 @@ router.patch('/album/:id', (req, res) => {
 //VIEW ALL TRACKS ON ALBUM
 router.get('/tracks/:album_id', (req,res) => {
     const sql = `SELECT t.track_number, a.album_artist, t.track_name, a.picture, t.track_duration, t.mp3
-                FROM album a JOIN track t ON a.album_id = t.album_id WHERE a.album_id = ?`
+                FROM album a JOIN track t ON a.album_id = t.album_id WHERE a.album_id = ? ORDER BY t.track_number`
     const data = req.params.album_id
 
     conn.query(sql, data, (err,result) => {
