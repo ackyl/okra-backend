@@ -68,6 +68,41 @@ router.post('/users', (req, res) => {
 
 })
 
+//  LOGIN
+router.get('/users/login', (req,res)=>{
+    const sql = `SELECT * FROM users WHERE username = ?`
+    const data = req.query.username
+
+    conn.query(sql, data, async (err, result) => {
+        if (err) return res.send(err)
+
+        const user = result[0]
+
+        if (!user) {
+            return res.send('Username not found')
+        }
+
+        const match = await bcrypt.compare(req.query.password, result[0].password)
+        if (!match) {
+            return res.send(`Password incorrect`)
+        }
+
+        res.send(user)
+    })
+})
+
+//Get Users
+router.get('/users', (req, res) => {
+    const sql = `SELECT * FROM users WHERE ?`
+    const id = req.query
+
+    conn.query(sql, id, (err, result) => {
+        if(err) return res.send(err)
+
+        res.send(result)
+    })
+})
+
 //Access Image
 router.get('/users/pp/:image', (req, res) => {
     const options = {
