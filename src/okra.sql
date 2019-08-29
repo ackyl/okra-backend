@@ -6,6 +6,8 @@ SELECT * FROM users;
 SELECT * FROM trans_detail;
 SELECT * FROM trans;
 
+SELECT * FROM album ORDER BY upload_date, stock;
+
 SELECT t.track_number, a.album_artist, t.track_name, a.picture, t.track_duration, t.mp3
 FROM album a JOIN track t ON a.album_id = t.album_id WHERE a.album_id = 1;
 
@@ -31,10 +33,14 @@ DROP TABLE users;
 DROP TABLE trans_detail;
 DROP TABLE trans;
 
+UPDATE album SET stock = 0 WHERE album_id = 4;
+
 DELETE FROM album WHERE album_id > 0;
 ALTER TABLE album AUTO_INCREMENT = 1;
 DELETE FROM track WHERE track_id > 0;
 ALTER TABLE track AUTO_INCREMENT = 1;
+DELETE FROM users WHERE user_id > 0;
+ALTER TABLE users AUTO_INCREMENT = 1;
 
 -- CREATE TABLES
 

@@ -188,7 +188,7 @@ router.delete('/album/:id', (req, res) => {
 
 //VIEW ALL ALBUM
 router.get('/album', (req, res) => {
-    const sql = `SELECT * FROM album ORDER BY upload_date`
+    const sql = `SELECT * FROM album ORDER BY upload_date DESC`
 
     conn.query(sql, (err, result) => {
         if(err) return res.send(err)
