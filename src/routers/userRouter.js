@@ -55,13 +55,12 @@ router.post('/users', (req, res) => {
         if(err) return res.send(err)
 
         if(result[0]){
-            return res.send('Email atau username sudah terpakai.')
+            return res.send('TAKEN')
         }else{
-
             conn.query(insertqry, data, (err,result1) => {
                 if(err) return res.send(err)
 
-                res.send('Your account has been created.')
+                res.send((result1.insertId).toString())
             })
         }
     })
