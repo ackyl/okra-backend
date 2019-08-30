@@ -14,10 +14,11 @@ const folder = multer.diskStorage(
     {
         destination: function (req, file, cb){
             cb(null, photosdir)
-        },
+        }
+        ,
         filename: function (req, file, cb){
             // Waktu upload, nama field, extension file
-            cb(null, Date.now() + file.fieldname + path.extname(file.originalname))
+            cb(null, file.originalname)
         }
     }
 )
@@ -26,11 +27,11 @@ const upstore = multer(
     {
         storage: folder,
         limits: {
-            fileSize: 1000000 // Byte , default 1MB
+            fileSize: 5000000 // Byte , default 1MB
         },
         fileFilter(req, file, cb) {
-            if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){ // will be error if the extension name is not one of these
-                return cb(new Error('Please upload image file (jpg, jpeg, or png)')) 
+            if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){
+                return cb(new Error('Please upload the appropriate image extension (jpg, jpeg, or png)')) 
             }
     
             cb(undefined, true)
@@ -148,9 +149,11 @@ router.patch('/users/:id', (req, res) => {
 //Upload Profile Picture
 router.post('/users/pp', upstore.single('pp'), (req, res) => {
     const sql = `SELECT * FROM users WHERE username = ?`
-    const sql2 = `UPDATE users SET profile_picture = '${req.file.filename}'
+    const sql2 = `UPDATE users SET profile_picture = '${req.body.pp_name}'
                     WHERE username = '${req.body.username}'`
     const data = req.body.username
+
+    console.log(req.body.pp)
 
     conn.query(sql, data, (err, result) => {
         if(err) return res.send(err)
@@ -163,8 +166,7 @@ router.post('/users/pp', upstore.single('pp'), (req, res) => {
             if(err) return res.send(err)
 
             res.send({
-                message: 'Upload berhasil',
-                filename: req.file.filename
+                message: 'Upload berhasil'
             })
         })
     })

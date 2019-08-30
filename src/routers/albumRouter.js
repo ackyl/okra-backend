@@ -197,6 +197,7 @@ router.get('/album', (req, res) => {
     })
 })
 
+
 //VIEW ALL ALBUM FILTERED
 router.get('/album/filter', (req, res) => {
     const sql = `SELECT * FROM album WHERE ?`
@@ -239,13 +240,13 @@ router.get('/tracks/:album_id', (req,res) => {
 })
 
 //Testing Ground
-mumeta.parseFile(`upload/testing/test.mp3`, {native: true})
-    .then(metadata=>{
-        // timestamp = new Date().toLocaleString("en-US", {timeZone: 'Asia/Bangkok'})
-        // console.log(timestamp.slice(0,9))
-        // console.log(timestamp.slice(11))
+// mumeta.parseFile(`upload/testing/test.mp3`, {native: true})
+//     .then(metadata=>{
+//         // timestamp = new Date().toLocaleString("en-US", {timeZone: 'Asia/Bangkok'})
+//         // console.log(timestamp.slice(0,9))
+//         // console.log(timestamp.slice(11))
 
-        // timestamp = new Date().toISOString().slice(0,19).replace('T', ' ');
-    })  
+//         // timestamp = new Date().toISOString().slice(0,19).replace('T', ' ');
+//     })  
 
 module.exports = router
