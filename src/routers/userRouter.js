@@ -153,8 +153,6 @@ router.post('/users/pp', upstore.single('pp'), (req, res) => {
                     WHERE username = '${req.body.username}'`
     const data = req.body.username
 
-    console.log(req.body.pp)
-
     conn.query(sql, data, (err, result) => {
         if(err) return res.send(err)
 
