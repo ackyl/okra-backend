@@ -1,6 +1,7 @@
 const conn = require('../connection/')
 const router = require('express').Router()
 
+//ADD TO CART
 router.post('/cart', (req, res) => {
 
     const insertqry = `INSERT INTO users SET ?`
@@ -22,7 +23,7 @@ router.post('/cart', (req, res) => {
         if(err) return res.send(err)
         
         if(result[0]){
-            const data = {td_id: result[0].td_id, user_id: req.body.user_id, album_id: req.body.album_id}
+            const data = {td_id: result[0].td_id, user_id: req.body.user_id, album_id: req.body.album_id, qty: req.body.qty}
             
             conn.query(addtocartqry, data, (err, result2) => {
                 if(err) return res.send(err)
@@ -33,7 +34,7 @@ router.post('/cart', (req, res) => {
             conn.query(newcartqry, dataX, (err, result1) => {
                 if(err) return res.send(err)
 
-                const dataY = {td_id: result1.insertId, user_id: req.body.user_id, album_id: req.body.album_id}
+                const dataY = {td_id: result1.insertId, user_id: req.body.user_id, album_id: req.body.album_id, qty: req.body.qty}
 
                 conn.query(addtocartqry, dataY, (err, result3) => {
                     if(err) return res.send(err)
@@ -45,6 +46,25 @@ router.post('/cart', (req, res) => {
 
     })
 
+})
+
+
+//GET ALL ITEMS IN CART
+router.get('/cart/:id', (req, res) => {
+    const query = `
+        SELECT a.picture, a.album_artist, a.album_name, a.price, t.qty
+        FROM users u
+        JOIN trans t ON u.user_id = t.user_id
+        JOIN trans_detail d ON t.td_id = d.td_id
+        JOIN album a ON a.album_id = t.album_id
+        WHERE u.user_id = ${req.params.id} AND d.trans_type = 'cart';
+    `
+
+    conn.query(query, (err,result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
 })
 
 
