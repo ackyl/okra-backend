@@ -51,7 +51,7 @@ router.post('/cart', (req, res) => {
 //GET ALL ITEMS IN CART
 router.get('/cart/:id', (req, res) => {
     const query = `
-        SELECT a.picture, a.album_artist, a.album_name, a.price, t.qty
+        SELECT a.picture, a.album_artist, a.album_name, a.price, t.qty, t.id, a.stock, a.album_id
         FROM users u
         JOIN trans t ON u.user_id = t.user_id
         JOIN trans_detail d ON t.td_id = d.td_id
@@ -66,7 +66,18 @@ router.get('/cart/:id', (req, res) => {
     })
 })
 
+//REMOVE FROM CART
+router.delete('/cart/:id', (req, res) => {
+    const sql = `DELETE FROM trans WHERE id = ${req.params.id}`
 
+    conn.query(sql, (err, result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
+//CHANGE STOCK IN ALBUM
 router.patch('/stock/:id', (req, res) => {
     const sql = `UPDATE album SET ? WHERE album_id = ${req.params.id}`
     const data = req.body
