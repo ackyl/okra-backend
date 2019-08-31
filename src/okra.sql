@@ -8,6 +8,14 @@ SELECT * FROM trans;
 
 SELECT * FROM album ORDER BY album_id DESC;
 
+SELECT u.user_id, d.td_id, d.trans_type, COUNT(t.id) AS total_album,  SUM(a.price) AS total_harga FROM users u
+JOIN trans t ON u.user_id = t.user_id
+JOIN trans_detail d ON t.td_id = d.td_id
+JOIN album a ON a.album_id = t.album_id
+WHERE d.trans_type != 'cart' AND u.user_id = 2
+GROUP BY d.td_id;
+
+
 SELECT t.track_number, a.album_artist, t.track_name, a.picture, t.track_duration, t.mp3
 FROM album a JOIN track t ON a.album_id = t.album_id WHERE a.album_id = 1;
 
@@ -24,10 +32,11 @@ JOIN album a ON t.album_id = a.album_id
 JOIN trans_detail d ON t.td_id = d.td_id;
 
 -- -----
-SELECT u.user_id, d.trans_type
+SELECT a.album_artist, a.album_name, a.price, t.qty
 FROM users u
 JOIN trans t ON u.user_id = t.user_id
 JOIN trans_detail d ON t.td_id = d.td_id
+JOIN album a ON a.album_id = t.album_id
 WHERE u.user_id = 2 AND d.trans_type = 'cart';
 
 SELECT * FROM trans;
@@ -35,6 +44,10 @@ SELECT * FROM trans_detail;
 
 INSERT INTO trans_detail (trans_type, trans_date) VALUES ('cart', 'sekarang');
 INSERT INTO trans (user_id, album_id, td_id) VALUES (2,1,1); 
+
+UPDATE album
+SET deleted = 1
+WHERE album_id = 5;
 -- ----
 
 SELECT * FROM users WHERE username = 'test' OR email = 'test@gmail.com';
@@ -111,6 +124,7 @@ id INT unsigned AUTO_INCREMENT NOT NULL PRIMARY KEY,
 user_id INT unsigned,
 album_id INT unsigned,
 td_id INT unsigned,
+qty INT NOT NULL,
 CONSTRAINT FK_UserUTA
 FOREIGN KEY(user_id) REFERENCES users(user_id)
 ON DELETE CASCADE ON UPDATE CASCADE,

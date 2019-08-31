@@ -51,7 +51,7 @@ router.post('/cart', (req, res) => {
 //GET ALL ITEMS IN CART
 router.get('/cart/:id', (req, res) => {
     const query = `
-        SELECT a.picture, a.album_artist, a.album_name, a.price, t.qty, t.id, a.stock, a.album_id
+        SELECT a.picture, a.album_artist, a.album_name, a.price, t.qty, t.id, a.stock, a.album_id, d.td_id
         FROM users u
         JOIN trans t ON u.user_id = t.user_id
         JOIN trans_detail d ON t.td_id = d.td_id
@@ -83,6 +83,33 @@ router.patch('/stock/:id', (req, res) => {
     const data = req.body
 
     conn.query(sql, data, (err, result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
+//CHECKOUT
+router.patch('/trans/:id', (req, res) => {
+    const sql = `UPDATE trans_detail SET ? WHERE td_id = ${req.params.id}`
+    const data = {trans_type: 'in progress'}
+
+    conn.query(sql, data, (err, result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
+router.get('/trans/:id', (req, res) => {
+    const sql = `SELECT u.user_id, d.td_id, d.trans_type, d.picture, COUNT(t.id) AS total_album,  SUM(a.price) AS total_harga FROM users u
+    JOIN trans t ON u.user_id = t.user_id
+    JOIN trans_detail d ON t.td_id = d.td_id
+    JOIN album a ON a.album_id = t.album_id
+    WHERE d.trans_type != 'cart' AND u.user_id = ${req.params.id}
+    GROUP BY d.td_id`
+
+    conn.query(sql, (err, result) => {
         if(err) res.send(err)
 
         res.send(result)
