@@ -4,7 +4,6 @@ const router = require('express').Router()
 //ADD TO CART
 router.post('/cart', (req, res) => {
 
-    const insertqry = `INSERT INTO users SET ?`
     const selectqry = `SELECT d.td_id
     FROM users u
     JOIN trans t ON u.user_id = t.user_id
@@ -61,6 +60,18 @@ router.get('/cart/:id', (req, res) => {
     `
 
     conn.query(query, (err,result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
+
+router.patch('/stock/:id', (req, res) => {
+    const sql = `UPDATE album SET ? WHERE album_id = ${req.params.id}`
+    const data = req.body
+
+    conn.query(sql, data, (err, result) => {
         if(err) res.send(err)
 
         res.send(result)
