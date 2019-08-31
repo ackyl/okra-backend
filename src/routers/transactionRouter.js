@@ -1,5 +1,40 @@
 const conn = require('../connection/')
 const router = require('express').Router()
+const path = require('path')
+const fs = require('fs')
+const multer = require('multer')
+
+const rootdir = path.join(__dirname,'/../..')
+const photosdir = path.join(rootdir, '/upload/image/bukti')
+
+const folder = multer.diskStorage(
+    {
+        destination: function (req, file, cb){
+            cb(null, photosdir)
+        }
+        ,
+        filename: function (req, file, cb){
+            // Waktu upload, nama field, extension file
+            cb(null, file.originalname)
+        }
+    }
+)
+
+const upstore = multer(
+    {
+        storage: folder,
+        limits: {
+            fileSize: 5000000 // Byte , default 1MB
+        },
+        fileFilter(req, file, cb) {
+            if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){
+                return cb(new Error('Please upload the appropriate image extension (jpg, jpeg, or png)')) 
+            }
+    
+            cb(undefined, true)
+        }
+    }
+)
 
 //ADD TO CART
 router.post('/cart', (req, res) => {
@@ -46,7 +81,6 @@ router.post('/cart', (req, res) => {
     })
 
 })
-
 
 //GET ALL ITEMS IN CART
 router.get('/cart/:id', (req, res) => {
@@ -147,5 +181,31 @@ router.get('/trans/detailz/:id', (req, res) => {
     })
 })
 
+//ACCESS IMAGE
+router.get('/trans/bukti/:image', (req, res) => {
+    const options = {
+        root: photosdir
+    }
+
+    const fileName = req.params.image
+
+    res.sendFile(fileName, options, function(err){
+        if(err) return res.send(err)
+    })
+})
+
+//Upload Bukti
+router.post('/trans/bukti', upstore.single('bukti'), (req, res) => {
+    const sql = `UPDATE trans_detail SET picture = '${req.body.picture}'
+                WHERE td_id = '${req.body.td_id}'`
+
+    conn.query(sql, (err, result) => {
+        if(err) return res.send(err)
+
+        res.send({
+            message: 'Upload berhasil'
+        })
+    })
+})
 
 module.exports = router

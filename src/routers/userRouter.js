@@ -115,7 +115,6 @@ router.get('/users/pp/:image', (req, res) => {
         if(err) return res.send(err)
         
     })
-
 })
 
 //User Details
