@@ -101,6 +101,7 @@ router.patch('/trans/:id', (req, res) => {
     })
 })
 
+//GET TRANS
 router.get('/trans/:id', (req, res) => {
     const sql = `SELECT u.user_id, d.td_id, d.trans_type, d.picture, COUNT(t.id) AS total_album,  SUM(a.price) AS total_harga FROM users u
     JOIN trans t ON u.user_id = t.user_id
@@ -110,6 +111,36 @@ router.get('/trans/:id', (req, res) => {
     GROUP BY d.td_id`
 
     conn.query(sql, (err, result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
+router.get('/trans/detail/:id', (req, res) => {
+    const sql = `SELECT a.album_artist, a.album_name, a.price, t.qty, d.trans_type, d.picture AS d_picture, a.picture
+    FROM users u
+    JOIN trans t ON u.user_id = t.user_id
+    JOIN trans_detail d ON t.td_id = d.td_id
+    JOIN album a ON a.album_id = t.album_id
+    WHERE d.td_id = ${req.params.id}`
+
+    conn.query(sql, (err,result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
+router.get('/trans/detailz/:id', (req, res) => {
+    const sql = `SELECT t.qty, d.trans_type, d.picture, COUNT(t.id) AS total_album,  SUM(a.price) AS total_harga
+    FROM users u
+    JOIN trans t ON u.user_id = t.user_id
+    JOIN trans_detail d ON t.td_id = d.td_id
+    JOIN album a ON a.album_id = t.album_id
+    WHERE d.td_id = ${req.params.id}`
+
+    conn.query(sql, (err,result) => {
         if(err) res.send(err)
 
         res.send(result)
