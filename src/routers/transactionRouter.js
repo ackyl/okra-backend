@@ -137,7 +137,7 @@ router.patch('/trans/:id', (req, res) => {
 
 //GET TRANS
 router.get('/trans/:id', (req, res) => {
-    const sql = `SELECT u.user_id, d.td_id, d.trans_type, d.picture, COUNT(t.id) AS total_album,  SUM(a.price) AS total_harga FROM users u
+    const sql = `SELECT u.user_id, d.td_id, d.trans_type, d.picture, COUNT(t.id) AS total_album,  SUM(a.price*t.qty) AS total_harga FROM users u
     JOIN trans t ON u.user_id = t.user_id
     JOIN trans_detail d ON t.td_id = d.td_id
     JOIN album a ON a.album_id = t.album_id
@@ -167,7 +167,7 @@ router.get('/trans/detail/:id', (req, res) => {
 })
 
 router.get('/trans/detailz/:id', (req, res) => {
-    const sql = `SELECT t.qty, d.trans_type, d.picture, COUNT(t.id) AS total_album,  SUM(a.price) AS total_harga
+    const sql = `SELECT t.qty, d.trans_type, d.picture, d.td_id, COUNT(t.id) AS total_album,  SUM(a.price*t.qty) AS total_harga
     FROM users u
     JOIN trans t ON u.user_id = t.user_id
     JOIN trans_detail d ON t.td_id = d.td_id
@@ -205,6 +205,25 @@ router.post('/trans/bukti', upstore.single('bukti'), (req, res) => {
         res.send({
             message: 'Upload berhasil'
         })
+    })
+})
+
+//GET VERIFY FOR ADMIN
+router.get('/verify', (req, res) => {
+    const query = `
+        SELECT u.username, d.td_id, COUNT(t.id) AS total_album,  SUM(a.price*t.qty) AS total_harga
+        FROM users u
+        JOIN trans t ON u.user_id = t.user_id
+        JOIN trans_detail d ON t.td_id = d.td_id
+        JOIN album a ON a.album_id = t.album_id
+        WHERE d.trans_type = 'in progress' AND d.picture IS NOT NULL
+        GROUP BY d.td_id
+    `
+
+    conn.query(query, (err,result) => {
+        if(err) res.send(err)
+
+        res.send(result)
     })
 })
 
