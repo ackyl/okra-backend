@@ -50,10 +50,12 @@ router.post('/album', upstore.array('mu', 20), (req, res) => {
     const qry4 = `INSERT INTO genre (genre) VALUES (?)`
     const qry5 = `INSERT INTO album_genre (album_id, genre_id) VALUES (?)`
 
+    console.log(req.files)
+
     album_id = 0
 
-    price = req.query.price
-    stock = req.query.stock
+    price = req.body.price
+    stock = req.body.stock
 
         //NGESAVE ALBUM ID
 
