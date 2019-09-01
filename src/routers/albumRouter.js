@@ -50,8 +50,6 @@ router.post('/album', upstore.array('mu', 20), (req, res) => {
     const qry4 = `INSERT INTO genre (genre) VALUES (?)`
     const qry5 = `INSERT INTO album_genre (album_id, genre_id) VALUES (?)`
 
-    console.log(req.files)
-
     album_id = 0
 
     price = req.body.price
@@ -190,7 +188,7 @@ router.delete('/album/:id', (req, res) => {
 
 //VIEW ALL ALBUM
 router.get('/album', (req, res) => {
-    const sql = `SELECT * FROM album WHERE deleted = 0 ORDER BY upload_date DESC`
+    const sql = `SELECT * FROM album WHERE deleted = 0 ORDER BY album_id DESC`
 
     conn.query(sql, (err, result) => {
         if(err) return res.send(err)
@@ -212,10 +210,12 @@ router.get('/album/filter', (req, res) => {
     })
 })
 
-//EDIT ALBUM PRICE AND STOCK
+//EDIT ALBUM
 router.patch('/album/:id', (req, res) => {
     const sql = `UPDATE album SET ? WHERE album_id = ${req.params.id}`
     const data = req.body
+
+    console.log(data)
 
     conn.query(sql, data, (err, result) => {
         if(err) return res.send(err)
