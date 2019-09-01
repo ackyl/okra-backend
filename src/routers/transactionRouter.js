@@ -135,6 +135,18 @@ router.patch('/trans/:id', (req, res) => {
     })
 })
 
+//VERIFY
+router.patch('/verify/:id', (req, res) => {
+    const sql = `UPDATE trans_detail SET ? WHERE td_id = ${req.params.id}`
+    const data = req.body
+
+    conn.query(sql, data, (err, result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
 //GET TRANS
 router.get('/trans/:id', (req, res) => {
     const sql = `SELECT u.user_id, d.td_id, d.trans_type, d.picture, COUNT(t.id) AS total_album,  SUM(a.price*t.qty) AS total_harga FROM users u
@@ -142,6 +154,22 @@ router.get('/trans/:id', (req, res) => {
     JOIN trans_detail d ON t.td_id = d.td_id
     JOIN album a ON a.album_id = t.album_id
     WHERE d.trans_type != 'cart' AND u.user_id = ${req.params.id}
+    GROUP BY d.td_id`
+
+    conn.query(sql, (err, result) => {
+        if(err) res.send(err)
+
+        res.send(result)
+    })
+})
+
+//GET ALL TRANS
+router.get('/alltrans', (req,res) => {
+    const sql = `SELECT u.user_id, u.username, d.td_id, d.trans_type, COUNT(t.id) AS total_album,  SUM(a.price*t.qty) AS total_harga FROM users u
+    JOIN trans t ON u.user_id = t.user_id
+    JOIN trans_detail d ON t.td_id = d.td_id
+    JOIN album a ON a.album_id = t.album_id
+    WHERE d.trans_type != 'cart'
     GROUP BY d.td_id`
 
     conn.query(sql, (err, result) => {
@@ -198,12 +226,16 @@ router.get('/trans/bukti/:image', (req, res) => {
 router.post('/trans/bukti', upstore.single('bukti'), (req, res) => {
     const sql = `UPDATE trans_detail SET picture = '${req.body.picture}'
                 WHERE td_id = '${req.body.td_id}'`
+    const sql2 = `UPDATE trans_detail SET trans_type = 'waiting'
+                WHERE td_id = ${req.body.td_id}`
 
     conn.query(sql, (err, result) => {
         if(err) return res.send(err)
 
-        res.send({
-            message: 'Upload berhasil'
+        conn.query(sql2, (err, result2) => {
+            if(err) return res.send(err)
+
+            res.send(result2)
         })
     })
 })
@@ -216,7 +248,7 @@ router.get('/verify', (req, res) => {
         JOIN trans t ON u.user_id = t.user_id
         JOIN trans_detail d ON t.td_id = d.td_id
         JOIN album a ON a.album_id = t.album_id
-        WHERE d.trans_type = 'in progress' AND d.picture IS NOT NULL
+        WHERE d.trans_type = 'waiting'
         GROUP BY d.td_id
     `
 
